@@ -1,0 +1,87 @@
+<!DOCTYPE HTML><html>
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+  <style>
+    html {
+     font-family: Arial;
+     display: inline-block;
+     margin: 0px auto;
+     text-align: center;
+    }
+    h2 { font-size: 3.0rem; }
+    p { font-size: 3.0rem; }
+    .units { font-size: 1.2rem; }
+    .ds-labels{
+      font-size: 1.5rem;
+      vertical-align:middle;
+      padding-bottom: 15px;
+      padding-left: 15px;
+      padding-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2>ESP DS18B20 Server</h2>
+  <p>
+    <i class="fas fa-thermometer-half" style="color:#059e8a;"></i> 
+    <span class="ds-labels">Temperature Celsius</span> 
+    <span id="temperaturec">%TEMPERATUREC%</span>
+    <sup class="units">&deg;C</sup>
+  </p>
+  <p>
+    <div id="chart-temperature" class="container"></div>
+  </p>
+  <p>
+    <a href="/deleteData"><button class="button">Delete data file</button></a>
+    <a href="/deleteConfig"><button class="button">Delete config file</button></a>
+  </p>
+</body>
+<script>
+setInterval(function ( ) {
+  var xnumber = 0;
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("temperaturec").innerHTML = this.responseText;
+      
+      var x = (new Date()).getTime(),
+          y = parseFloat(this.responseText);
+      //console.log(this.responseText);
+      if(chartT.series[0].data.length > 40) {
+        chartT.series[0].addPoint([x, y], true, true, true);
+      } else {
+        chartT.series[0].addPoint([x, y], true, false, true);
+      }
+    }
+  };
+  xhttp.open("GET", "/temperaturec", true);
+  xhttp.send();
+}, 10000) ;
+
+var chartT = new Highcharts.Chart({
+  chart:{ renderTo : 'chart-temperature' },
+  title: { text: 'Temperature' },
+  time: {timezoneOffset: -60},
+  series: [{
+    showInLegend: false,
+    data: []
+  }],
+  plotOptions: {
+    line: { animation: false,
+      dataLabels: { enabled: true }
+    },
+    series: { color: '#059e8a' }
+  },
+  xAxis: { type: 'datetime',
+    dateTimeLabelFormats: { minutes: '%H:%M:%S' }
+  },
+  yAxis: {
+    title: { text: 'Temperature (Celsius)' }
+  },
+  credits: { enabled: false }
+});
+
+</script>
+</html>
